@@ -15,26 +15,38 @@ dictObj ={'vt_scan': 'null','submit_date':'null','source':'apkpure.com','title':
 #download file by link and rename
 def Download_link(link, file_name,rank):
     dictObj['name'] = file_name
-    dictObj['rank'] = rank+1
+    dictObj['rank'] = rank
     file_name = file_name + ".apk"#add the filename extesion after the file_name
     res = requests.get(link)#Connect to the apk download page
     soup = BeautifulSoup(res.text,"html.parser")#parser the apk download link
     temps_name = soup.find_all("a", attrs={"class": "ga"})
     for i in temps_name:#key = r
-        #print i['href']
         r = requests.get(i['href'], stream=True)#get url and download through https
-        dictObj['apkdata'] = r
         if r.status_code == 200:
             with open(file_name, 'wb') as f:#rename apk file
                 r.raw.decode_content = True
                 shutil.copyfileobj(r.raw, f)
+        f = open(file_name, 'r')
+        dictObj['apkdata'] = f.read()#store the file into dictionary
+        if os.path.exists(file_name):#check the file status
+            try:
+                 os.remove(file_name)#remove file
+            except OSError, e:
+                print ("Error: %s - %s." % (e.filename,e.strerror))
+        else:
+            print "file not found!"
+    print dictObj
+    raw_input('Enter your input:')
+
 
 def Get_apk_information(temps_name):
     for i in temps_name:
         temp = i.find_all(href=True)
         temp_2 = temp[0]['href']
         temp_2 = "https://apkpure.com" + temp_2
-
+        temp_4 = temp_2
+        temp_4 = temp_4.split("/")
+        dictObj['pgname'] = temp_4[4]
         res2 = requests.get(temp_2)
         soup2 = BeautifulSoup(res2.text,"html.parser")
         temps_2 = soup2.find_all('ul', {'class': 'version-ul'})
@@ -78,7 +90,7 @@ def Get_apk_name_and_link(apk_topic):
         app_downlink.append(temp2)
 
     for i in range(len(app_name)):
-        Download_link(app_downlink[i],app_name[i],i)
+        Download_link(app_downlink[i],app_name[i],i+1)
 
 
 if __name__ == '__main__':
@@ -90,3 +102,6 @@ if __name__ == '__main__':
     for i in temps[1].find_all('li'):
         temp = i.find_all(href=True)
         Get_apk_name_and_link(temp[0]['href'])
+
+
+    #        raw_input('Enter your input:')
