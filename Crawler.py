@@ -5,13 +5,14 @@ import requests
 import re
 import urllib2
 import shutil
+from Hash import Hash_mix
 from bs4 import BeautifulSoup
 
 dictObj ={'vt_scan': 'null','submit_date':'null','source':'apkpure.com','title':'null',
 'sub_title':'null','name':'null','rank':'null','pgname':'null','version':'null',
 'size':'null','upload_date':'null','apkdata':'null','normal_permission':'null','danger_permission':'null',
 'sha1':'null','sha256':'null','ssdeep':'null','md5':'null'}
-
+dictTemp = {}
 #download file by link and rename
 def Download_link(link, file_name,rank):
     dictObj['name'] = file_name
@@ -28,6 +29,11 @@ def Download_link(link, file_name,rank):
                 shutil.copyfileobj(r.raw, f)
         f = open(file_name, 'r')
         dictObj['apkdata'] = f.read()#store the file into dictionary
+        dictTemp = Hash_mix(dictObj['apkdata'])
+        dictObj['md5'] = dictTemp['md5']
+        dictObj['sha1'] = dictTemp['sha1']
+        dictObj['sha256'] = dictTemp['sha256']
+        dictObj['ssdeep'] = dictTemp['ssdeep']
         if os.path.exists(file_name):#check the file status
             try:
                  os.remove(file_name)#remove file
@@ -35,7 +41,10 @@ def Download_link(link, file_name,rank):
                 print ("Error: %s - %s." % (e.filename,e.strerror))
         else:
             print "file not found!"
-    print dictObj
+    #print dictObj
+    for i in dictObj:
+        if i != 'apkdata':
+            print i,': ',dictObj[i],'\n'
     raw_input('Enter your input:')
 
 
@@ -92,8 +101,7 @@ def Get_apk_name_and_link(apk_topic):
     for i in range(len(app_name)):
         Download_link(app_downlink[i],app_name[i],i+1)
 
-
-if __name__ == '__main__':
+def main():
     res = requests.get("https://apkpure.com/app")
     soup = BeautifulSoup(res.text,"html.parser")
     temps = soup.find_all('ul', {'class': 'index-category cicon'})
@@ -102,6 +110,16 @@ if __name__ == '__main__':
     for i in temps[1].find_all('li'):
         temp = i.find_all(href=True)
         Get_apk_name_and_link(temp[0]['href'])
+if __name__ == '__main__':
+    main()
+    # res = requests.get("https://apkpure.com/app")
+    # soup = BeautifulSoup(res.text,"html.parser")
+    # temps = soup.find_all('ul', {'class': 'index-category cicon'})
+    # # get apk category
+    # apk_category = []
+    # for i in temps[1].find_all('li'):
+    #     temp = i.find_all(href=True)
+    #     Get_apk_name_and_link(temp[0]['href'])
 
 
     #        raw_input('Enter your input:')
