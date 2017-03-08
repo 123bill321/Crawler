@@ -8,17 +8,20 @@ import shutil
 from Hash import Hash_mix
 from Analysis_XML import *
 from bs4 import BeautifulSoup
+from URL_and_IP_check import *
 
 dictObj ={'vt_scan': 'null','submit_date':'null','source':'apkpure.com','title':'null',
 'sub_title':'null','name':'null','rank':'null','pgname':'null','version':'null',
-'size':'null','upload_date':'null','apkdata':'null','normal_permission':'null','danger_permission':'null',
-'sha1':'null','sha256':'null','ssdeep':'null','md5':'null'}
+'size':'null','upload_date':'null','apkdata':'null','normal_permission':[],'danger_permission':[],
+'sha1':'null','sha256':'null','ssdeep':'null','md5':'null','interesting_strings_URL':[],
+'interesting_strings_IP':[]}
 dictTemp = {}
-
+#------------------------------------------------------------------------
 #download file by link and rename
 def Download_link(link, file_name,rank):
     dictObj['name'] = file_name
     dictObj['rank'] = rank
+    print dictObj['size']
     file_name = file_name + ".apk"#add the filename extesion after the file_name
     res = requests.get(link)#Connect to the apk download page
     soup = BeautifulSoup(res.text,"html.parser")#parser the apk download link
@@ -40,6 +43,9 @@ def Download_link(link, file_name,rank):
         dictTemp = Anylsis(file_name)
         dictObj['normal_permission'] = dictTemp['No_normal']
         dictObj['danger_permission'] = dictTemp['No_danger']
+        dictObj['interesting_strings_URL'] = Find_URL(file_name)
+        dictObj['interesting_strings_IP'] = Find_IP_address(file_name)
+
         if os.path.exists(file_name):#check the file status
             try:
                  os.remove(file_name)#remove file
@@ -51,32 +57,28 @@ def Download_link(link, file_name,rank):
             print "file not found!"
             raw_input("Enter any key to continue!")
             sys.exit(0)
-    #print dictObj
-    for i in dictObj:
-        if i != 'apkdata':
-            print i,': ',dictObj[i],'\n'
-    raw_input('Enter your input:')
-
-
+#------------------------------------------------------------------------
 def Get_apk_information(temps_name):
-    for i in temps_name:
-        temp = i.find_all(href=True)
-        temp_2 = temp[0]['href']
-        temp_2 = "https://apkpure.com" + temp_2
-        temp_4 = temp_2
-        temp_4 = temp_4.split("/")
-        dictObj['pgname'] = temp_4[4]
-        res2 = requests.get(temp_2)
-        soup2 = BeautifulSoup(res2.text,"html.parser")
-        temps_2 = soup2.find_all('ul', {'class': 'version-ul'})
-        temp = temps_2[0].find_all('p')
-        dictObj['version'] = temp[3].text
-        dictObj['upload_date'] = temp[5].text
-        temps_3 = soup2.find_all('span', {'class': 'fsize'})
-        temp = temps_3[0].text
-        temp = temp.replace('(','')
-        temp = temp.replace(')','')
-        dictObj['size'] = temp
+
+    # for i in temps_name:
+    temp = temps_name.find_all(href=True)
+    temp_2 = temp[0]['href']
+    temp_2 = "https://apkpure.com" + temp_2
+    temp_4 = temp_2
+    temp_4 = temp_4.split("/")
+    dictObj['pgname'] = temp_4[4]
+    res2 = requests.get(temp_2)
+    soup2 = BeautifulSoup(res2.text,"html.parser")
+    temps_2 = soup2.find_all('ul', {'class': 'version-ul'})
+    temp = temps_2[0].find_all('p')
+    dictObj['version'] = temp[3].text
+    dictObj['upload_date'] = temp[5].text
+    temps_3 = soup2.find_all('span', {'class': 'fsize'})
+    temp = temps_3[0].text
+    temp = temp.replace('(','')
+    temp = temp.replace(')','')
+    dictObj['size'] = temp
+
 #---------------------------------------------------------------
 
 #get apk name
@@ -86,11 +88,8 @@ def Get_apk_name_and_link(apk_topic):
     res = requests.get(apk_topic)
     soup = BeautifulSoup(res.text,"html.parser")#parser the page
     temps_name = soup.find_all("div", attrs={"class": "category-template-title"})
-    Get_apk_information(temps_name)
 
-    #print dictObj
     #find all apk's informations in this page
-
 
     app_name = []#store the apk's name
     for i in temps_name:
@@ -109,7 +108,15 @@ def Get_apk_name_and_link(apk_topic):
         app_downlink.append(temp2)
 
     for i in range(len(app_name)):
+        Get_apk_information(temps_name[i])
         Download_link(app_downlink[i],app_name[i],i+1)
+        debug()
+
+def debug():
+    for i in dictObj:
+        if i != 'apkdata':
+            print i,': ',dictObj[i],'\n'
+    raw_input('Enter your input:')
 
 def main():
     res = requests.get("https://apkpure.com/app")
@@ -122,14 +129,3 @@ def main():
         Get_apk_name_and_link(temp[0]['href'])
 if __name__ == '__main__':
     main()
-    # res = requests.get("https://apkpure.com/app")
-    # soup = BeautifulSoup(res.text,"html.parser")
-    # temps = soup.find_all('ul', {'class': 'index-category cicon'})
-    # # get apk category
-    # apk_category = []
-    # for i in temps[1].find_all('li'):
-    #     temp = i.find_all(href=True)
-    #     Get_apk_name_and_link(temp[0]['href'])
-
-
-    #        raw_input('Enter your input:')

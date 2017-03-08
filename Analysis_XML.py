@@ -73,22 +73,8 @@ def Anylsis (file_name):
         sys.exit(0)
     return d
 def main():
-    # f = {'a':[],'b':[]}
-    # f['a'].append('1')
-    # f['a'].append('2')
-    # print f
-    # f['a'] = Normal_permission_list
-    # print f
     f = Anylsis('APKPure_v1.2.7_apkpure.com.apk')
     for i in f:
         print f[i],'\n'
 if __name__ == '__main__':
     main()
-    # f = Anylsis('APKPure_v1.2.7_apkpure.com.apk')
-    # print f
-    # file = 'APKPure_v1.2.7_apkpure.com.apk'
-    # out_file = 'temp'
-    # cmd = r'apktool d %s -o %s ' %(file, out_file)# use apktool2.0.1
-    # os.system(cmd)
-    # Permission(out_file)
-    # shutil.rmtree(out_file) #remove folder
