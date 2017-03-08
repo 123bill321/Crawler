@@ -21,7 +21,7 @@ dictTemp = {}
 def Download_link(link, file_name,rank):
     dictObj['name'] = file_name
     dictObj['rank'] = rank
-    print dictObj['size']
+    # print dictObj['size']
     file_name = file_name + ".apk"#add the filename extesion after the file_name
     res = requests.get(link)#Connect to the apk download page
     soup = BeautifulSoup(res.text,"html.parser")#parser the apk download link
@@ -97,6 +97,7 @@ def Get_apk_name_and_link(apk_topic):
         temp_2 = temp[0]['title']
         temp_2 = temp_2.replace(" ","_")#replace the space to underline
         app_name.append(temp_2)
+
 
     #get apk download link
     app_downlink = []#store the apk's link

@@ -23,7 +23,4 @@ pattern = r'http.*'
 #     else:
 #         temp_string += i
 
-
-l1 = ['b','c','d','b','c','a','a']
-l1 = list(set(l1))
-print l1
+for i in range(1,9)
